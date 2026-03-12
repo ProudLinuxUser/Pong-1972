@@ -1,4 +1,6 @@
+#include <time.h>
 #include <raylib.h>
+#include <stdlib.h>
 #define RAYGUI_IMPLEMENTATION
 #include <raygui.h>
 
@@ -11,17 +13,23 @@ int main(void){
         UnloadImage(icon);
         SetTargetFPS(60);
 
+        //random
+        int options[] = {1,-1};
+        srand(time(NULL));
+        int n = sizeof(options)/sizeof(options[0]);
+        int random = options[rand() % n];
+
         //Ball
         int BALLX       = 400;
-        int BALLY       = 220;
+        int BALLY       = 300;
         int ball_speedX = 5;
         int ball_speedY = 5;
 
         //Points
         int PLAYER_POINT = 0;
         int BOT_POINT    = 0;
-        int SPEED        = 5;
-        int BOT_SPEED    = 4;
+        float SPEED        = 5;
+        float BOT_SPEED    = 4.5;
 
         //Player && Bot rect
         int Px = 60;
@@ -67,8 +75,8 @@ int main(void){
                         //Out of bounds check
                         if (player.y >= 500)  player.y = 500;
                         if (player.y <= 0)    player.y = 0;
-                        if (bot.y >= 500) bot.y        = 500;
-                        if (bot.y <= 0)   bot.y        = 0;
+                        if (bot.y >= 500)        bot.y = 500;
+                        if (bot.y <= 0)          bot.y = 0;
 
                         //Ball collision
                         if (BALLX - 20 <= 0||  BALLX - 780 >= 0) ball_speedX = -ball_speedX;
@@ -77,18 +85,22 @@ int main(void){
                         //Point check
                         if (BALLX - 20 == 0){
                                 BOT_POINT++;
+                                BALLX = WIDTH/2;
                         }
                         if (BALLX - 780 == 0){
                                 PLAYER_POINT++;
+                                BALLX = WIDTH/2;
                         }
 
                         //Ball collision
                         if (CheckCollisionCircleRec((Vector2){BALLX,BALLY}, 15, player)){
-                                ball_speedX *= -1;
+                                ball_speedX = 5;
+                                ball_speedY = 5 * (rand() % 2 == 0 ? 1 : -1);
                                 BALLX = player.x + player.width + 15;
                         }
                         if (CheckCollisionCircleRec((Vector2){BALLX,BALLY}, 15, bot)){
-                                ball_speedX *= -1;
+                                ball_speedX = -5;
+                                ball_speedY = 5 * (rand() %2 == 0 ? 1 : -1);
                                 BALLX = bot.x - 15;
                         }
                 }
@@ -98,8 +110,9 @@ int main(void){
                            DrawCircle(397,y,3,WHITE);
                 }
 
+                //Reset && quit options
                 if (PLAYER_POINT == 15){
-                        DrawText("Player won!",250,250,50,WHITE);
+                        DrawText("Player won!",250,270,50,WHITE);
                         game_on = true;
                         if (GuiButton((Rectangle){250,325,300,100},"Restart")){
                                 restart = true;
@@ -109,7 +122,7 @@ int main(void){
                         }
 
                 }else if (BOT_POINT == 15){
-                        DrawText("Bot won!",250,300,50,WHITE);
+                        DrawText("Bot won!",300,250,50,WHITE);
                         game_on = true;
                         if (GuiButton((Rectangle){250,325,300,100},"Restart")){
                                 restart = true;
@@ -120,15 +133,17 @@ int main(void){
                 }
 
                 BeginDrawing();
+                //reseting canva every frame
                 ClearBackground(BLACK);
 
                 //Drawing ball
-                DrawCircle(BALLX,BALLY,20,20,WHITE);
+                DrawRectangle(BALLX,BALLY,20,20,WHITE);
 
                 //Drawing points
                 DrawText(TextFormat("%.2d",PLAYER_POINT),235,10,100,WHITE);
                 DrawText(TextFormat("%.2d",BOT_POINT),450,10,100,WHITE);
 
+                //map outline,player,bot
                 DrawRectangleLinesEx(bg,10,WHITE);
                 DrawRectangleRec(player,WHITE);
                 DrawRectangleRec(bot,WHITE);
